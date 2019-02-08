@@ -1,0 +1,30 @@
+apiVersion: skaffold/v1beta2
+kind: Config
+build:
+  artifacts:
+  - image: changeme
+    context: .
+    docker: {}
+  tagPolicy:
+    envTemplate:
+      template: '{{.DOCKER_REGISTRY}}/junibutler/go-feb8-friday:{{.VERSION}}'
+  local: {}
+deploy:
+  kubectl: {}
+profiles:
+- name: dev
+  build:
+    artifacts:
+    - docker: {}
+    tagPolicy:
+      envTemplate:
+        template: '{{.DOCKER_REGISTRY}}/junibutler/go-feb8-friday:{{.DIGEST_HEX}}'
+    local: {}
+  deploy:
+    helm:
+      releases:
+      - name: go-feb8-friday
+        chartPath: charts/go-feb8-friday
+        setValueTemplates:
+          image.repository: '{{.DOCKER_REGISTRY}}/junibutler/go-feb8-friday'
+          image.tag: '{{.DIGEST_HEX}}'
